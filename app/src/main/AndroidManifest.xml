@@ -17,14 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Launcher">
         <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.dotslash21.faclient.MainActivity" />
-        </activity>
-        <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
