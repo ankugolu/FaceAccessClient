@@ -1,6 +1,7 @@
 package io.github.dotslash21.faclient;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -48,9 +49,9 @@ public class AuthActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_auth);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         preview = findViewById(R.id.firePreview);
         if (preview == null) {
@@ -94,7 +95,7 @@ public class AuthActivity extends AppCompatActivity
         // If there's no existing cameraSource, create one.
         if (cameraSource == null) {
             cameraSource = new CameraSource(this, graphicOverlay);
-            cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT)
+            cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
         }
 
         try {
