@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">FaceAccess Client</string>
-
     <!--Settings file strings-->
     <string name="action_settings">Settings</string>
     <string name="host"></string>
