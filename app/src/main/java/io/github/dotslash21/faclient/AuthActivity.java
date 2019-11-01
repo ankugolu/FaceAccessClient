@@ -41,7 +41,7 @@ import io.github.dotslash21.faclient.utils.CameraSourcePreview;
 import io.github.dotslash21.faclient.utils.GraphicOverlay;
 import io.github.dotslash21.faclient.utils.FaceIdentificationProcessor;
 
-import static android.hardware.Camera.*;
+import  android.hardware.Camera;
 
 
 public class AuthActivity extends AppCompatActivity
@@ -82,7 +82,7 @@ public class AuthActivity extends AppCompatActivity
         ToggleButton facingSwitch = findViewById(R.id.facingSwitch);
         facingSwitch.setOnCheckedChangeListener(this);
         // Hide the toggle button if there is only 1 camera
-        if (getNumberOfCameras() == 1) {
+        if (Camera.getNumberOfCameras() == 1) {
             facingSwitch.setVisibility(View.GONE);
         }
 
