@@ -16,4 +16,21 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+
+    <!--Settings file strings-->
+    <string name="action_settings">Settings</string>
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="host"></string>
+    <string name="title_host">Host Name</string>
+    <string name="key_host_name">key_host_name</string>
+    <string name="host_summary">Input the Host name</string>
+
+    <string name="port"></string>
+    <string name="title_port">Port Number</string>
+    <string name="key_port_name">key_port_name</string>
+    <string name="port_summary">Input the Port Number</string>
+
 </resources>
