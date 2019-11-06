@@ -1,10 +1,26 @@
+// Copyright (c) 2019 Arunangshu Biswas
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+// and associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute,
+// sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+// BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package io.github.dotslash21.faclient;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,10 +37,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.dotslash21.faclient.utils.BackendConnectionManager;
 import io.github.dotslash21.faclient.utils.CameraSource;
 import io.github.dotslash21.faclient.utils.CameraSourcePreview;
 import io.github.dotslash21.faclient.utils.GraphicOverlay;
-import io.github.dotslash21.faclient.utils.facedetection.FaceContourDetectorProcessor;
+import io.github.dotslash21.faclient.utils.FaceIdentificationProcessor;
+
+import  android.hardware.Camera;
 
 
 public class AuthActivity extends AppCompatActivity
@@ -35,6 +54,8 @@ public class AuthActivity extends AppCompatActivity
     private CameraSource cameraSource = null;
     private CameraSourcePreview preview;
     private GraphicOverlay graphicOverlay;
+
+    private BackendConnectionManager backendConnectionManager;
 
     private static boolean isPermissionGranted(Context context, String permission) {
         if (ContextCompat.checkSelfPermission(context, permission)
@@ -48,6 +69,7 @@ public class AuthActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Log.d(TAG, "onCreate");
@@ -69,9 +91,16 @@ public class AuthActivity extends AppCompatActivity
             facingSwitch.setVisibility(View.GONE);
         }
 
+        // Create backendConnectionManager instance with required info from MainActivity
+        Intent intent = getIntent();
+        String backendHostName = intent.getStringExtra("BACKEND_HOST_NAME");
+        String backendPort = intent.getStringExtra("BACKEND_PORT");
+        int numFrameSamples = intent.getIntExtra("NUM_FRAME_SAMPLES", 5);
+        backendConnectionManager = new BackendConnectionManager(backendHostName, backendPort, numFrameSamples);
+
         // Get Required Permissions
         if (allPermissionsGranted()) {
-            createCameraSource("Face Contour");
+            createCameraSource("Face Identification");
         } else {
             getRuntimePermissions();
         }
@@ -99,10 +128,10 @@ public class AuthActivity extends AppCompatActivity
         }
 
         try {
-            Log.i(TAG, "Using Face Detector Processor");
-            cameraSource.setMachineLearningFrameProcessor(new FaceContourDetectorProcessor());
+            Log.i(TAG, "Using Face Identification Processor");
+            cameraSource.setMachineLearningFrameProcessor(new FaceIdentificationProcessor(this, backendConnectionManager));
         } catch (Exception e) {
-            Log.e(TAG, "Can not create image processor: Face Contour", e);
+            Log.e(TAG, "Can not create image processor: Face Identification", e);
             Toast.makeText(
                     getApplicationContext(),
                     "Can not create image processor: " + e.getMessage(),
@@ -202,7 +231,7 @@ public class AuthActivity extends AppCompatActivity
             int requestCode, String[] permissions, @NonNull int[] grantResults) {
         Log.i(TAG, "Permission granted!");
         if (allPermissionsGranted()) {
-            createCameraSource("Face Contour");
+            createCameraSource("Face Identification");
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }

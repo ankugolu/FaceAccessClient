@@ -11,12 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package io.github.dotslash21.faclient.utils.facedetection;
+package io.github.dotslash21.faclient.utils;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -32,39 +30,33 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions;
 import java.io.IOException;
 import java.util.List;
 
-import io.github.dotslash21.faclient.R;
 import io.github.dotslash21.faclient.utils.CameraImageGraphic;
 import io.github.dotslash21.faclient.utils.FrameMetadata;
 import io.github.dotslash21.faclient.utils.GraphicOverlay;
 import io.github.dotslash21.faclient.utils.VisionProcessorBase;
+import io.github.dotslash21.faclient.utils.FaceIdentificationGraphic;
 
-/**
- * Face Detector Demo.
- */
-public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVisionFace>> {
-
-    private static final String TAG = "FaceDetectionProcessor";
+public class FaceIdentificationProcessor extends VisionProcessorBase<List<FirebaseVisionFace>> {
+    private static final String TAG = "FaceIdentificationProc";
+    private Context mContext;
+    private BackendConnectionManager backendConnectionManager;
+    private boolean frameCollectionDone = false;
 
     private final FirebaseVisionFaceDetector detector;
 
-    private final Bitmap overlayBitmap;
+    public FaceIdentificationProcessor(Context context, BackendConnectionManager backendConnectionManager) {
+        this.mContext = context;
 
-    public FaceDetectionProcessor(Resources resources) {
-//        FirebaseVisionFaceDetectorOptions options =
-//                new FirebaseVisionFaceDetectorOptions.Builder()
-//                        .setClassificationMode(FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
-//                        .setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
-//                        .build();
+        this.backendConnectionManager = backendConnectionManager;
+
         FirebaseVisionFaceDetectorOptions options =
                 new FirebaseVisionFaceDetectorOptions.Builder()
                         .setPerformanceMode(FirebaseVisionFaceDetectorOptions.FAST)
-                        .setMinFaceSize(0.8f)
+                        .setContourMode(FirebaseVisionFaceDetectorOptions.ALL_CONTOURS)
+                        .setMinFaceSize(0.7f)
                         .build();
 
         detector = FirebaseVision.getInstance().getVisionFaceDetector(options);
-
-//        overlayBitmap = BitmapFactory.decodeResource(resources, R.drawable.clown_nose);
-        overlayBitmap = null;
     }
 
     @Override
@@ -72,7 +64,7 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
         try {
             detector.close();
         } catch (IOException e) {
-            Log.e(TAG, "Exception thrown while trying to close Face Detector: " + e);
+            Log.e(TAG, "Exception thrown while trying to close Face Identification Processor: " + e);
         }
     }
 
@@ -92,20 +84,49 @@ public class FaceDetectionProcessor extends VisionProcessorBase<List<FirebaseVis
             CameraImageGraphic imageGraphic = new CameraImageGraphic(graphicOverlay, originalCameraImage);
             graphicOverlay.add(imageGraphic);
         }
-        for (int i = 0; i < faces.size(); ++i) {
-            FirebaseVisionFace face = faces.get(i);
 
-            int cameraFacing =
-                    frameMetadata != null ? frameMetadata.getCameraFacing() :
-                            Camera.CameraInfo.CAMERA_FACING_BACK;
-            FaceGraphic faceGraphic = new FaceGraphic(graphicOverlay, face, cameraFacing, overlayBitmap);
+        if (faces.size() < 1) {
+//            Toast.makeText(this.mContext, "No faces detected!", Toast.LENGTH_SHORT).show();
+        } else if (faces.size() > 1) {
+//            Toast.makeText(this.mContext, "Multiple faces detected!", Toast.LENGTH_SHORT).show();
+
+            for (int i = 0; i < faces.size(); ++i) {
+                FirebaseVisionFace face = faces.get(i);
+                FaceIdentificationGraphic faceGraphic = new FaceIdentificationGraphic(graphicOverlay, face);
+                graphicOverlay.add(faceGraphic);
+            }
+        } else {
+            FirebaseVisionFace face = faces.get(0);
+            FaceIdentificationGraphic faceGraphic = new FaceIdentificationGraphic(graphicOverlay, face);
             graphicOverlay.add(faceGraphic);
+
+            if (!frameCollectionDone) {
+                // Cuts out the bounding box around the face.
+                int width = face.getBoundingBox().width();
+                int height = face.getBoundingBox().height();
+                int centerX = face.getBoundingBox().centerX();
+                int centerY = face.getBoundingBox().centerY();
+                int x = centerX - (width / 2);
+                int y = centerY - (height / 2);
+
+                Log.d(TAG, "CUTOUT: "+x+" "+y+" "+width+" "+height);
+
+                Bitmap frame = Bitmap.createBitmap(originalCameraImage, x, y, width, height);
+
+                int result = backendConnectionManager.pushFrame(frame);
+
+                if (result == 1) {
+                    frameCollectionDone = true;
+                    backendConnectionManager.authenticateFace(this.mContext);
+                }
+            }
         }
+
         graphicOverlay.postInvalidate();
     }
 
     @Override
     protected void onFailure(@NonNull Exception e) {
-        Log.e(TAG, "Face detection failed " + e);
+        Log.e(TAG, "Face identification failed " + e);
     }
 }

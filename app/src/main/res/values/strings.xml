@@ -1,20 +1,21 @@
 <resources>
     <string name="app_name">FaceAccess Client</string>
-    <string name="title_activity_settings">Settings</string>
 
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <!--Settings file strings-->
+    <string name="action_settings">Settings</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <string name="host">127.0.0.1</string>
+    <string name="title_host">Host Name</string>
+    <string name="key_host_name">key_host_name</string>
+    <string name="host_summary">Input the Host name</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="descr_overflow_button" />
+    <string name="port">8080</string>
+    <string name="title_port">Port Number</string>
+    <string name="key_port_name">key_port_name</string>
+    <string name="port_summary">Input the Port Number</string>
+
+    <string name="frame">5</string>
+    <string name="title_frames">Number of Frames</string>
+    <string name="key_frame_name">key_frame_name</string>
+    <string name="frame_summary">Input the number of frames to sample</string>
 </resources>
